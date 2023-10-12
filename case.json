@@ -1,0 +1,28 @@
+{
+    "problemStatement": "A leading biotech company is developing a treatment for Alzheimer's disease. This ground-breaking treatment is different from any other Alzheimer's treatment on the market because it actually slows the progression of the disease, rather than just treating its symptoms. The company’s executive team is concerned about the results of a high-level internal feasibility study that flagged a potential risk to the launch of this treatment – a rumored shortage of infusion capacity in the US. Given that the Alzheimer's treatment is designed to be administered via infusion, such a shortage would severely hamper the market acceptance and hence the financial rewards from the treatment. In preparation for the launch of this treatment, the company has hired you to help them figure out the extent of the expected shortfall, and how they should respond.",
+    
+    "clarifyingQuestions": [
+        "Infusion refers to inserting the medicine directly into a patients bloodstream via IV (intravenous) application, ideally through the patient’s arm.",
+        "The treatment will be launched in the US alone.",
+        "The client has not yet estimated how big the infusion shortfall will be.",
+        "The client does not have any strategies to mitigate the shortfall.",
+        "Most other Alzheimers medications are delivered as oral pills.",
+        "The treatment (if approved by the FDA) would come to market in about 2 years."
+    ],
+
+    "framework": {
+
+    },
+    
+    "questions": {
+        "Question 1 - Numeracy": {
+            "dependsOnQuestions": [],
+            "prompt": "How much do you estimate the shortfall of infusion capacity will be in the US for this treatment when it enters the market?"
+        },
+
+        "Question 2 - Creativity": {
+            "dependsOnQuestions": ["Question 1"],
+            "prompt": "The client intends to introduce the new treatment to the market in 2 years. How can the biotech firm mitigate the infusion capacity shortfall and what immediate actions can they take?"
+        }
+    }
+}
