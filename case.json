@@ -1,7 +1,7 @@
-{
+{   
     "problemStatement": "A leading biotech company is developing a treatment for Alzheimer's disease. This ground-breaking treatment is different from any other Alzheimer's treatment on the market because it actually slows the progression of the disease, rather than just treating its symptoms. The company’s executive team is concerned about the results of a high-level internal feasibility study that flagged a potential risk to the launch of this treatment – a rumored shortage of infusion capacity in the US. Given that the Alzheimer's treatment is designed to be administered via infusion, such a shortage would severely hamper the market acceptance and hence the financial rewards from the treatment. In preparation for the launch of this treatment, the company has hired you to help them figure out the extent of the expected shortfall, and how they should respond.",
     
-    "clarifyingQuestions": [
+    "additionalInformation": [
         "Infusion refers to inserting the medicine directly into a patients bloodstream via IV (intravenous) application, ideally through the patient’s arm.",
         "The treatment will be launched in the US alone.",
         "The client has not yet estimated how big the infusion shortfall will be.",
@@ -10,19 +10,99 @@
         "The treatment (if approved by the FDA) would come to market in about 2 years."
     ],
 
-    "framework": {
-
-    },
-    
-    "questions": {
-        "Question 1 - Numeracy": {
-            "dependsOnQuestions": [],
-            "prompt": "How much do you estimate the shortfall of infusion capacity will be in the US for this treatment when it enters the market?"
+    "caseComponents": {
+        "1": {
+            "type": "framework",
+            "referenceSolution": [
+                "1. What is the expected shortfall in infusion capacity?",
+                "\t 1.a. What is the infusion capacity required to deliver the Alzheimer’s treatment?",
+                "\t\t 1.a.i. How many people in the US have Alzheimer’s?",
+                "\t\t 1.a.ii. How many Alzheimer’s patients will seek this treatment?",
+                "\t\t 1.a.iii. How frequently and for how long does this infusion need to be administered?",
+                "\t 1.b How much free infusion capacity is expected in the US at the time of product launch?",
+                "\t 1.c. What is the expected shortfall in infusion capacity?",
+                "2. Why is there a shortfall in infusion capacity?",
+                "\t 2.a. Infrastructure gap? (e.g., not enough providers or equipment to administer infusions)",
+                "\t 2.b. Infrastructure gap? (e.g., not enough providers or equipment to administer infusions)",
+                "\t 2.c. Incentive misalignment? (e.g., providers don’t want to offer infusions)",
+                "\t 2.d. Logistics issue? (e.g., capacity overwhelmed in certain geographies but sitting idle in others)",
+                "3. How can the shortfall in infusion capacity be mitigated?",
+                "\t 3.a. Reduce the demand for infusion capacity",
+                "\t 3.b Increase the supply of infusion capacity"
+            ],
+            "additionalCommands": []
         },
-
-        "Question 2 - Creativity": {
-            "dependsOnQuestions": ["Question 1"],
-            "prompt": "The client intends to introduce the new treatment to the market in 2 years. How can the biotech firm mitigate the infusion capacity shortfall and what immediate actions can they take?"
+        "2": {
+            "type": "question",
+            "questionType": "numeracy",
+            "question": "How much do you estimate the shortfall of infusion capacity will be in the US for this treatment when it enters the market?",
+            "additionalInformation":[
+                "10% of people aged 60 - 80 have Alzheimers",
+                "We expect 50% of people with Alzheimers to try out/use our new treatment",
+                "The US is expected to have free capacity for 12M infusion hours per year at the time of launch for the Alzheimer’s treatment",
+                "Current Alzheimers medications are oral pills. Therefore, no infusion capacity gets reallocated from Alzheimer’s patients switching from their previous medication"
+            ],
+            "referenceSolution": [
+                "Step 1: Calculate the potential patient population based on the total US population and the Alzheimer rate in the US population",
+                "Step 2: Calculate the actual patient populationby taking into account that not everyone will use our drug",
+                "Step 3: Calculate the yearly infusion hours per patient by taking into account the frequency and length of the infusion",
+                "Step 4: Calculate the total infusion hours required by multiplying the number of patients with the yearly infusion hours per patient",
+                "Step 5: Calculate the shortfall in infusion capacity by subtracting the total infusion hours required from the free infusion capacity at the time of launch"
+        ],
+            "additionalCommands": [
+                "The candidate should ask about the infusion frequency and length. If the candidate doesn’t and just stops at the number of patients trying to get the treatment, the interviewer should remind them that they need to estimate the infusion capacity shortfall.",
+                "The interviewer should share that the infusion must be administered once every 3 months and takes 2 hours to administer each time"
+            ]
+        },
+        "3": {
+            "type": "question",
+            "questionType": "creativity",
+            "question": "The client intends to introduce the new treatment to the market in 2 years. How can the biotech firm mitigate the infusion capacity shortfall and what immediate actions can they take?",
+            "additionalInformation":[
+                "Demand reduction methods e.g., adjusting our product to require fewer infusion hours and/or changing the mode of delivery is currently not feasible as any alterations to product delivery will delay the launch by 3 years.",
+                "While the government will not hinder our efforts to increase supply, they will also not actively help with policy or financing as well."
+            ],
+            "referenceSolution": [
+                "Driver 1: Addressing the infrastructure gap",
+                "\t - Create new treatment centers",
+                "\t - Improve infrastructure in existing medical/treatment centers",
+                "\t\t - Provide/upgrade infusion infrastructure",
+                "\t\t - Facilitate discounts for infusion infrastructure (through partnerships and other means)",
+                "\t\t - Incentivize medical/treatment centers to hire specialized treatment staff",
+                "Driver 2: Addressing the skills gap",
+                "\t - Provide active/live training for medical staff to efficiently administer the new treatment",
+                "\t - Provide training material (Online/Offline) to enable medical staff to self-learn effective administration of the new treatment",
+                "Driver 3: Addressing the incentive misalignment",
+                "\t - Partner with insurance companies to reimburse a higher amount for this treatment",
+                "\t - Provide some profit kickback to partners across the value chain",
+                "Driver 4: Addressing any logistics issues",
+                "\t - Provide online infusion capacity tracking services for patients (e.g., appointment portal)",
+                "\t - Work with medical providers to ensure consistent treatment supply availability"
+            ],
+            "additionalCommands": []
+        },
+        "4": {
+            "type": "synthesis",
+            "task": "What would you recommend to the client?",
+            "referenceSolution": [
+                "State that the infusion capacity shortfall will be around 20M –28M infusion hours per year.",
+                "State some of the brainstormed ideas to mitigate the infusion capacity shortfall."
+            ],
+            "additionalCommands": []
         }
+    },
+    "caseStructure": {
+        "type": "sequential",
+        "children": [
+            "1",
+            {
+                "type": "parallel",
+                "children": [
+                    "2",
+                    "3"
+                ]
+            },
+            "4"
+        ]
     }
 }
