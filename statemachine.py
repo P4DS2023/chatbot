@@ -1,5 +1,4 @@
 import json
-from pprint import pprint
 from case_component import CaseComponent
 from case_structure_component import CaseStructureComponent, CaseStructureComponentType
 from utils.json import Json
@@ -14,9 +13,15 @@ class CaseStateMachine():
 
         self.parsed_case_structure = self._parseCaseStructure(self.case_structure_json)
         self.current_state = self._getInitialState(self.parsed_case_structure)
+
+        self.problem_statement = self.case_structure_json["problemStatement"]
+        self.additional_information = self.case_structure_json["additionalInformation"]
     
     def getCurrentState(self):
         return self.current_state
+
+    def complete_current_state(self):
+        self.current_state.beenCompleted = True
     
     def get_stack_to_element(self, id) -> list[CaseStructureComponent]:
         def get_stack_to_element_recursively(element_id, structure_stack: list[CaseStructureComponent]) -> (list[CaseStructureComponent], bool):
@@ -66,7 +71,29 @@ class CaseStateMachine():
         return recursive_pop_until_non_completed_element(stack_to_current_element)
     
     def advanceToState(self, stateId):
-        return
+        # check if current state is completed
+        if not self.current_state.beenCompleted:
+            raise Exception("Current state must be completed before advancing to next state")
+
+        # find state by id
+        def recursive_find_state_by_id(structure_component: CaseStructureComponent, id):    
+            for child in structure_component.children:
+                if isinstance(child, CaseComponent):
+                    if child.id == id:
+                        return child
+                    
+                if isinstance(child, CaseStructureComponent):
+                    result = recursive_find_state_by_id(child, id)
+                    if result is not None:
+                        return result
+            
+            return None
+        
+        new_state = recursive_find_state_by_id(self.parsed_case_structure, stateId)
+        if new_state is None:
+            raise Exception("State not found in case structure")
+        
+        self.current_state = new_state
     
     def _getInitialState(self, parsed_case_structure):
         """
@@ -133,5 +160,5 @@ if __name__ == "__main__":
     # next_possible_states = case_state_machine.getNextPossibleStates()
     # print(next_possible_states)
 
-    current_state = case_state_machine.getCurrentState()
-    print(case_state_machine.parsed_case_structure)
+    #current_state = case_state_machine.getCurrentState()
+    #print(case_state_machine.parsed_case_structure)

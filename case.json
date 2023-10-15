@@ -11,6 +11,9 @@
     ],
 
     "caseComponents": {
+        "0": {
+            "type": "introduction"
+        },
         "1": {
             "type": "framework",
             "referenceSolution": [
@@ -94,6 +97,7 @@
     "caseStructure": {
         "type": "sequential",
         "children": [
+            "0",
             "1",
             {
                 "type": "parallel",

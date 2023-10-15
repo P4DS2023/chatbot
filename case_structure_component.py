@@ -1,13 +1,11 @@
 from abc import abstractmethod
 from enum import Enum
-import json
 
 from case_component import CaseComponent
 
 class CaseStructureComponentType(Enum):
     SEQUENTIAL = 1
     PARALLEL = 2
-
 
 class CaseStructureComponent():
     def __init__(self, type, children):
@@ -17,8 +15,7 @@ class CaseStructureComponent():
     def __str__(self):
         children_string = "\n".join([str(child) for child in self.children])
         return f"{{Type: {self.type}, Children: [{children_string}]}}"
-    
-    
+      
     def get_elements_to_continue(self):
         if self.type == CaseStructureComponentType.SEQUENTIAL:
             return self._get_elements_to_continue_sequential()

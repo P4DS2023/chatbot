@@ -1,7 +1,7 @@
 from enum import Enum, IntEnum
-from abc import abstractmethod
 
 class CaseComponentType(Enum):
+    INTRODUCTION = 0
     FRAMEWORK = 1
     QUESTION = 2
     SYNTHESIS = 3
@@ -10,7 +10,11 @@ class CaseComponent():
     def __init__(self, id, raw_json_string):
         self.id = id
         self.beenCompleted = False
-        self.reference_solution = "\n".join(raw_json_string["referenceSolution"])
+
+        try:
+            self.reference_solution = "\n".join(raw_json_string["referenceSolution"])
+        except:
+            self.reference_solution = None
 
         try:
             self.additional_commands = "\nCommand: ".join(raw_json_string["additionalCommands"])
@@ -22,14 +26,16 @@ class CaseComponent():
         except:
             self.additional_information = None
     
-    @abstractmethod
-    def factory(id, raw_json_string):
+    @classmethod
+    def factory(cls, id, raw_json_string):
         if raw_json_string["type"] == "framework":
             return CaseFrameworkComponent(id, raw_json_string)
         elif raw_json_string["type"] == "question":
             return CaseQuestionFrameworkComponent(id, raw_json_string)
         elif raw_json_string["type"] == "synthesis":
             return CaseSynthesisComponent(id, raw_json_string)
+        elif raw_json_string["type"] == "introduction":
+            return CaseIntroductionComponent(id, raw_json_string)
         else:
             raise Exception("Unknown case component type")
         
@@ -38,6 +44,12 @@ class CaseComponent():
     
     def toJSON(self):
         return self.__str__()
+    
+class CaseIntroductionComponent(CaseComponent):
+    def __init__(self, id, raw_json_string):
+        super().__init__(id, raw_json_string)
+        self.type = CaseComponentType.INTRODUCTION
+        #self.prompt = raw_json_string["prompt"]
 
 class CaseFrameworkComponent(CaseComponent):
     def __init__(self, id, raw_json_string):
