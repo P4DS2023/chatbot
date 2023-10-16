@@ -1,4 +1,5 @@
 from chatbot_with_history import ChatBotWithHistory
+from langchain.llms import VertexAI
 from controller import Controller
 from statemachine import CaseStateMachine
 from dotenv import load_dotenv
@@ -19,9 +20,11 @@ if __name__ == '__main__':
 
     logger = logging.getLogger('casey')
 
+    
+    llm = VertexAI(model_name="code-bison")
 
     case_state_machine = CaseStateMachine("case.json")
-    chatbot = ChatBotWithHistory()
+    chatbot = ChatBotWithHistory(llm=llm)
 
     controller = Controller(chatbot=chatbot, state_machine=case_state_machine)
     controller.start_case()

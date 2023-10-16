@@ -75,7 +75,7 @@ class Controller():
                 self.state_machine.complete_current_state()
                 break
             else:
-                print(res)
+                print(f"Response was {res}")
                 raise Exception("The response should be either System: True or System: False")
 
     def select_next_section(self, next_possible_states: list[CaseComponent]):
@@ -96,16 +96,29 @@ class Controller():
         possible_options_to_continue =[f"{{id: {component.id}, question: {component.question}}}" for component in next_possible_states]
         possible_options_to_continue_string = "\n".join(possible_options_to_continue)
         self.chatbot.add_prompt(f"""Command: Compare the candidates response of where to continue, with the possible options from the reference solution. The options are:
-                                    {possible_options_to_continue_string}
-                                
-                                    If the candidate provided a close match respond with System: (True, id). Else choose one id of where to continue and respond with System: (False, id)
-                                """)
+{possible_options_to_continue_string}
+
+If the candidate provided a close match respond with "System: (True, <id>)". Else choose one id of where to continue and respond with "System: (False, <id>)".""")
         res = self.chatbot.get_response()
         logging.debug(f"Response of where to continue: {res}")
-        res_components = res.split(" ")
-        assert len(res_components) == 3, "The response should contain 3 components [Systems, True/False, id]"
+        
+        # response is in formant "System: (True/False, <id>)"
+        # extract the individual components
+        def extract_bool_and_id(input_string):
+            import re
+            pattern = r'System:\s*\(([^,]+),\s*(\d+)\)'
+            match = re.match(pattern, input_string)
 
-        id_to_continue = res_components[2]
+            if match:
+                bool_value = match.group(1).strip().lower() == 'true'
+                id_value = match.group(2).strip()
+                return (bool_value, id_value)
+            else:
+                raise Exception(f"Could not extract bool and id from {input_string}")
+
+
+        (did_match, id_to_continue) = extract_bool_and_id(res)
+        logging.debug(f"did_match: {did_match}, id_to_continue: {id_to_continue}")
 
         component_to_continue = None
         for component in next_possible_states:
@@ -115,10 +128,10 @@ class Controller():
         
         assert component_to_continue is not None, f"The id {id_to_continue} should be one of the possible next states"
 
-        if "False" in res_components[1]:
+        if did_match:
             # The candidate did not provide a close match
             self.chatbot.add_prompt(f"Command: Tell the candidate that instead of his idea we want to look into the following question: {component_to_continue.question}")
-        elif "True" in res_components[1]:
+        elif did_match:
             self.chatbot.add_prompt(f"Command: Tell the candidate that his idea was good. Tell him that we will look into the following question: {component_to_continue.question}")
         else:
             raise Exception("The second component of the response should be either True or False")

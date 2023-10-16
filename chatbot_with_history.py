@@ -1,10 +1,9 @@
-from langchain.llms import OpenAI
 from utils.filter import filter_llm_response
 from loggers.conversation_logger import ConversationLogger
 
 class ChatBotWithHistory():
-    def __init__(self):
-        self.llm = OpenAI()
+    def __init__(self, llm):
+        self.llm = llm
         self.conversation_history = []
     
     def add_prompt(self, prompt, should_print=True):
