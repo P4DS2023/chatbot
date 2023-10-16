@@ -1,7 +1,7 @@
-from chatbot_with_history import ChatBotWithHistory
+from llm.chatbot_with_history import ChatBotWithHistory
 from langchain.llms import VertexAI
 from controller import Controller
-from statemachine import CaseStateMachine
+from statemachine.statemachine import CaseStateMachine
 from dotenv import load_dotenv
 import logging
 
@@ -21,10 +21,11 @@ if __name__ == '__main__':
     logger = logging.getLogger('casey')
 
     
-    llm = VertexAI(model_name="code-bison")
+    #llm = VertexAI(model_name="chat-bison")
+    llm = VertexAI(max_output_tokens=2048)
 
-    case_state_machine = CaseStateMachine("case.json")
+    case_state_machine = CaseStateMachine("cases/case.json")
     chatbot = ChatBotWithHistory(llm=llm)
 
     controller = Controller(chatbot=chatbot, state_machine=case_state_machine)
-    controller.start_case()
+    controller.run_complete_case()

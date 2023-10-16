@@ -1,4 +1,4 @@
-from case_component import CaseComponentType
+from statemachine.case_component import CaseComponentType
 from conversation_templates.case_introduction import CaseIntroductionTemplate
 from conversation_templates.framework_template import FrameworkTemplate
 from conversation_templates.numeracy_template import NumeracyTemplate

@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from enum import Enum
 
-from case_component import CaseComponent
+from statemachine.case_component import CaseComponent
 
 class CaseStructureComponentType(Enum):
     SEQUENTIAL = 1

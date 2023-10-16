@@ -1,6 +1,6 @@
 import json
-from case_component import CaseComponent
-from case_structure_component import CaseStructureComponent, CaseStructureComponentType
+from statemachine.case_component import CaseComponent
+from statemachine.case_structure_component import CaseStructureComponent, CaseStructureComponentType
 from utils.json import Json
 
 class CaseStateMachine():
@@ -24,6 +24,9 @@ class CaseStateMachine():
         self.current_state.beenCompleted = True
     
     def get_stack_to_element(self, id) -> list[CaseStructureComponent]:
+        """
+        Given the id of a case component, return the stack of case components that lead to the current state
+        """
         def get_stack_to_element_recursively(element_id, structure_stack: list[CaseStructureComponent]) -> (list[CaseStructureComponent], bool):
             current_element = structure_stack[-1]
 
@@ -55,6 +58,11 @@ class CaseStateMachine():
 
 
     def getNextPossibleStates(self):
+        """
+        Given the current state return a list of states that could follow given the structure of the case.
+        Sequential parts must be completed one after another, parallel parts can be completed in any order.
+        However each subsection must be completed before continuing to the next case component
+        """
         stack_to_current_element = self.get_stack_to_element(self.current_state.id)
 
         def recursive_pop_until_non_completed_element(stack: list[CaseStructureComponent]):

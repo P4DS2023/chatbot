@@ -1,4 +1,4 @@
-from case_component import CaseComponent
+from statemachine.case_component import CaseComponent
 from conversation_templates.conversation_template_interface import ConversationTemplateInterface
 
 class NumeracyTemplate(ConversationTemplateInterface):
@@ -8,6 +8,9 @@ class NumeracyTemplate(ConversationTemplateInterface):
     def get_introduction_prompt(self):
         return f"""Command: We are now at the start of one question of the case. This is a numeracy question and thus involves a lot of calculations. The question to for the candidate to answer is the following:
 {self.case_component.question}
+
+Additional information you should provide the candidate when they ask for it is:
+{self.case_component.additional_information}
 
 A reference solution of steps to solve the question is the following:
 {self.case_component.reference_solution}

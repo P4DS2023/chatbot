@@ -1,7 +1,7 @@
 # %% Setup
 from dotenv import load_dotenv
-from chatbot_with_history import ChatBotWithHistory
-from statemachine import CaseStateMachine
+from llm.chatbot_with_history import ChatBotWithHistory
+from statemachine.statemachine import CaseStateMachine
 from importlib import reload
 
 # load environment variables from .env file

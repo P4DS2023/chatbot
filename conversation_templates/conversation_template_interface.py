@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from case_component import CaseComponent
+from statemachine.case_component import CaseComponent
 
 
 class ConversationTemplateInterface():
