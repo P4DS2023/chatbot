@@ -1,8 +1,8 @@
-from statemachine.case_component import CaseComponent
+from statemachine.case_component import CaseComponent, CaseQuestionComponent
 from conversation_templates.conversation_template_interface import ConversationTemplateInterface
 
 class NumeracyTemplate(ConversationTemplateInterface):
-    def __init__(self, case_component: CaseComponent):
+    def __init__(self, case_component: CaseQuestionComponent):
         super().__init__(case_component)
     
     def get_introduction_prompt(self):

@@ -15,13 +15,14 @@ class Controller():
         self.state_machine = state_machine
     
     def run_complete_case(self):
-        self.chatbot.add_prompt(initial_primer.get_prompt(self.state_machine.problem_statement, self.state_machine.additional_information))
+        self.chatbot.add_new_section()
+        self.chatbot._add_prompt(initial_primer.get_prompt(self.state_machine.problem_statement, self.state_machine.additional_information), is_volatile=False)
         self._introduce_case()
         self._loop_main_section()
         self._close_case()
 
     def test_section(self, section_history: list[str], conversation_history: list[str]):
-        self.chatbot.add_prompt(initial_primer.get_prompt(self.state_machine.problem_statement, self.state_machine.additional_information))
+        self.chatbot._add_prompt(initial_primer.get_prompt(self.state_machine.problem_statement, self.state_machine.additional_information), is_volatile=False)
 
         # Run the section history to bring the statemachine to the correct state
         for i, section_id in enumerate(section_history[:-1]):
@@ -31,7 +32,7 @@ class Controller():
         
         # add the conversation history to the chatbot
         for conversation in conversation_history:
-            self.chatbot.add_prompt(conversation)
+            self.chatbot._add_prompt(conversation)
 
         # run the current section
         self.run_current_section()
@@ -45,6 +46,7 @@ class Controller():
         # a case must start with the introduction section
         current_section = self.state_machine.getCurrentState()
         assert isinstance(current_section, CaseIntroductionComponent), "The case must start with the introduction section"
+        
         self.run_current_section()
 
         # a case should then continue with the framework section
@@ -52,6 +54,8 @@ class Controller():
         assert len(next_possible_states) == 1, "There should be exactly one possible next state, i.e. the framework"
         assert isinstance(next_possible_states[0], CaseFrameworkComponent), "The case should continue with the framework section"
         self.state_machine.advanceToState(next_possible_states[0].id)
+        
+        
         self.run_current_section()
     
     def _loop_main_section(self):
@@ -78,29 +82,31 @@ class Controller():
 
 
     def run_current_section(self):
+        self.chatbot.add_new_section()
         section = self.state_machine.getCurrentState()
         conversation_template = ConversationTemplate.conversationTemplateFactory(section)
 
         # Introduce the section
-        self.chatbot.add_prompt(conversation_template.get_introduction_prompt())
+        self.chatbot._add_prompt(conversation_template.get_introduction_prompt(), is_volatile=False)
         res = self.chatbot.get_user_response()
-        self.chatbot.add_prompt(res)
+        self.chatbot._add_prompt(res, is_volatile=False)
 
         # Run the section
         while True:
             # check if the section is completed
-            self.chatbot.add_prompt(conversation_template.get_check_completion_prompt())
+            self.chatbot._add_prompt(conversation_template.get_check_completion_prompt(), is_volatile=True)
             user_input = input("User Input: ")
-            self.chatbot.add_prompt(f"Candidate: {user_input}")
+            self.chatbot._add_prompt(f"Candidate: {user_input}")
 
-            is_completed_result = safety_filter(user_input, BooleanValidator(), self.chatbot)
+            (raw_result, is_completed_result) = safety_filter(user_input, BooleanValidator(), self.chatbot)
+            self.chatbot._add_prompt(raw_result, is_volatile=True)
 
             # check if we finished the section based on the response
             if  not is_completed_result:
                 # The section is not completed
-                self.chatbot.add_prompt("Command: Continue the conversation. Think about how to continue in a sensible way. Then respond with Interviewer: <your response>")
+                self.chatbot._add_prompt("Command: Continue the conversation. Think about how to continue in a sensible way. Then respond with Interviewer: <your response>", is_volatile=True)
                 res = self.chatbot._get_response()
-                self.chatbot.add_prompt(res)
+                self.chatbot._add_prompt(res, is_volatile=False)
             else:
                 # The section is completed
                 self.state_machine.complete_current_state()
@@ -108,28 +114,30 @@ class Controller():
 
     def select_next_section(self, next_possible_states: list[CaseComponent]):
         # Ask the candidate what he would like to do next
-        self.chatbot.add_prompt("Command: We finished the last section, successfull. Did the candidate already provide some indication where he wants to move next. If yes answer with System: True, else with System: False")
+        self.chatbot._add_prompt("Command: We finished the last section, successfully. Did the candidate already provide some indication where he wants to move next. If yes answer with System: True, else with System: False", is_volatile=True)
         res = self.chatbot._get_response()
-        did_provide_indication = safety_filter(res, BooleanValidator(), self.chatbot)
-        #self.chatbot.add_prompt(res)
+        (raw_result, did_provide_indication) = safety_filter(res, BooleanValidator(), self.chatbot)
+        self.chatbot._add_prompt(raw_result, is_volatile=True)
 
         if not did_provide_indication:
-            self.chatbot.add_prompt("Command: Ask the candidate where he would like to move next")
+            self.chatbot._add_prompt("Command: Ask the candidate where he would like to move next", is_volatile=True)
             res = self.chatbot._get_response()
-            self.chatbot.add_prompt(res)
+            self.chatbot._add_prompt(res, is_volatile=False)
 
             candidate_response = input("Candidate: ")
-            self.chatbot.add_prompt(f"Candidate: {candidate_response}")
+            self.chatbot._add_prompt(f"Candidate: {candidate_response}", is_volatile=False)
         
         logging.debug(f"Next possible states: {next_possible_states}")
         possible_options_to_continue =[f"{{id: {component.id}, question: {component.question}}}" for component in next_possible_states]
         possible_options_to_continue_string = "\n".join(possible_options_to_continue)
-        self.chatbot.add_prompt(f"""Command: Compare the candidates response of where to continue, with the possible options from the reference solution. The options are:
+        self.chatbot._add_prompt(f"""Command: Compare the candidates response of where to continue, with the possible options from the reference solution. The options are:
 {possible_options_to_continue_string}
 
-If the candidate provided a close match respond with "System: (True, <id>)". Else choose one id of where to continue and respond with "System: (False, <id>)".""")
+If the candidate provided a close match respond with "System: (True, <id>)". Else choose one id of where to continue and respond with "System: (False, <id>)".""", is_volatile=True)
         res = self.chatbot._get_response()
-        (did_match, id_to_continue) = safety_filter(res, NextSectionIdValidator(), self.chatbot)
+        (raw_result, (did_match, id_to_continue)) = safety_filter(res, NextSectionIdValidator(), self.chatbot)
+        self.chatbot._add_prompt(raw_result, is_volatile=True)
+        
         logging.debug(f"did_match: {did_match}, id_to_continue: {id_to_continue}")
 
         component_to_continue = None
@@ -142,10 +150,12 @@ If the candidate provided a close match respond with "System: (True, <id>)". Els
 
         if did_match:
             # The candidate did not provide a close match
-            self.chatbot.add_prompt(f"Command: Tell the candidate that instead of his idea we want to look into the following question: {component_to_continue.question}")
+            self.chatbot._add_prompt(f"Command: Tell the candidate that instead of his idea we want to look into the following question: {component_to_continue.question}", is_volatile=True)
         else:
-            self.chatbot.add_prompt(f"Command: Tell the candidate that his idea was good. Tell him that we will look into the following question: {component_to_continue.question}")
+            self.chatbot._add_prompt(f"Command: Tell the candidate that his idea was good. Tell him that we will look into the following question: {component_to_continue.question}", is_volatile=True)
 
+        res = self.chatbot.get_user_response()
+        self.chatbot._add_prompt(res, is_volatile=False)
         
         return component_to_continue.id
 

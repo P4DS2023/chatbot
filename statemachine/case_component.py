@@ -31,7 +31,7 @@ class CaseComponent():
         if raw_json_string["type"] == "framework":
             return CaseFrameworkComponent(id, raw_json_string)
         elif raw_json_string["type"] == "question":
-            return CaseQuestionFrameworkComponent(id, raw_json_string)
+            return CaseQuestionComponent(id, raw_json_string)
         elif raw_json_string["type"] == "synthesis":
             return CaseSynthesisComponent(id, raw_json_string)
         elif raw_json_string["type"] == "introduction":
@@ -62,7 +62,7 @@ class CaseFrameworkComponent(CaseComponent):
     def toJSON(self):
         return self.__str__()
 
-class CaseQuestionFrameworkComponent(CaseComponent):
+class CaseQuestionComponent(CaseComponent):
     def __init__(self, id, raw_json_string):
         super().__init__(id, raw_json_string)
         self.type = CaseComponentType.QUESTION
