@@ -15,7 +15,7 @@ Additional information you should provide the candidate when they ask for it is:
 A reference solution of steps to solve the question is the following:
 {self.case_component.reference_solution}
 
-Command: Start this section by asking the candidate to solve the question. Make sure that your wording fits into the previous conversation with the candidate.
+Command: Start this section by asking the candidate to solve the question. Make sure that your wording fits into the previous conversation with the candidate. Remember only ask the question, do not continue the conversation.
 """
     
     def get_check_completion_prompt(self):  

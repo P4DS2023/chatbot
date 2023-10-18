@@ -8,7 +8,18 @@ class CaseStructureComponentType(Enum):
     PARALLEL = 2
 
 class CaseStructureComponent():
+    """
+    Each case consists of different components that either must be completed in order or parallel. The case structure component is used
+    to make such a case structure machine readable. Each component therefore contains a type (sequential or parallel) to indicate how this section must be worked through
+    as well as a list of children, i.e. case components.
+    """
     def __init__(self, type, children):
+        """
+        Initializes a new instance of the CaseStructureComponent class.
+
+        :param type: A CaseStructureComponentType enum value representing the type of the component (sequential or parallel).
+        :param children: A list of CaseComponent objects representing the children of the component.
+        """
         self.type = type
         self.children = children
 

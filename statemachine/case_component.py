@@ -1,4 +1,4 @@
-from enum import Enum, IntEnum
+from enum import Enum
 
 class CaseComponentType(Enum):
     INTRODUCTION = 0
@@ -7,6 +7,11 @@ class CaseComponentType(Enum):
     SYNTHESIS = 3
 
 class CaseComponent():
+    """
+    A class representing a specific component in the case. Each case consists of different components that either must be completed in order or parallel.
+    Each case component object contains information about the component as well as additional information such as beenCompleted.
+    This class should only hold as an interface. Typically subclasses for each component type should be implemented on top.
+    """
     def __init__(self, id, raw_json_string):
         self.id = id
         self.beenCompleted = False

@@ -1,5 +1,8 @@
 import re
 class Validator():
+    """
+    Interface for a validator class used in the safety filter.
+    """
     
     def validate(self, input: str)->(bool, any):
         raise NotImplementedError("The validate method needs to be implemented by the subclass")
@@ -8,26 +11,48 @@ class Validator():
         raise NotImplementedError("The reprompt method needs to be implemented by the subclass")
     
 class ChatbotOutputValidator(Validator):
-    def __init__(self, allowed_tags = ["Candidate:", "Interviewer:", "Command:", "System:"]):
-        self.all_tags = ["Candidate:", "Interviewer:", "Command:", "System:"]
-        self.allowed_tags = allowed_tags
+    """
+    Validator implementation to validate the output of the chatbot.
+    Basically this validator checks that only one response is given, and the response starts with one of the allowed tags.
+    """
+    def __init__(self, allowed_tags = ["Interviewer", "Command"]):
+        tags_formatted = []
+        for tag in allowed_tags:
+            tags_formatted = tag[:-1] if tag.endswith(':') else tag
+        self.allowed_tags = tags_formatted 
     
+    def _find_tags(text) -> list[str]:
+        """
+        Find all tags in the input text. A tag is a string that starts with a capital letter and ends with a colon. For example "Interviewer:"
+
+        :param text: A string representing the input text.
+        :return: A list of strings representing the tags found in the input text. Tags are returned without the colon.
+        """
+        # Regular expression pattern to match tags
+        pattern = r'\b[A-Z][a-z]*:'
+
+        # Find all matches of the pattern in the input text
+        matches = re.findall(pattern, text, re.MULTILINE)
+
+        # Remove the ':' character from each match
+        cleaned_matches = [match[:-1] for match in matches]
+
+        return cleaned_matches
+
     def validate(self, input:str) -> (bool, str):
-        # for any of the tags find fist occurence
-        tag_indices = []
-        for tag in self.all_tags:
-            if tag in input:
-                if tag in self.allowed_tags:
-                    tag_indices.append(input.index(tag))
-                else:
-                    return (False, None)
-        
+        # find all tags in the input
+        all_tags = ChatbotOutputValidator._find_tags(input)
+
         # check that exactly one tag was found
-        if len(tag_indices) != 1:
+        if len(all_tags) != 1:
             return (False, None)
-        
-        # return everything after the tag
-        return(True, input.strip())
+
+        # check that the tag is allowed
+        if all_tags[0] not in self.allowed_tags:
+            return (False, None)
+
+        return (True, input.strip())
+
     
     def call(self, context, chatbot):
         return chatbot._get_response(extended_context=context)
@@ -38,6 +63,9 @@ class ChatbotOutputValidator(Validator):
 
 
 class BooleanValidator(Validator):
+    """
+    Validator implementation to validate a boolean response. A boolean response is a response that is either "System: True" or "System: False".
+    """
     def __init__(self):
         super().__init__()
     
@@ -60,6 +88,13 @@ class BooleanValidator(Validator):
     
 
 class NextSectionIdValidator(Validator):
+    """
+    Validator implementation to validate a next section ID response. A next section ID response is a response that is of the form "System: (<bool>, <id>)".
+    """
+    def __init__(self, possible_next_states: list[str]):
+        super().__init__()
+        self.possible_next_states = possible_next_states
+
     def validate(self, input:str) -> (bool, (bool, str)):
         pattern = r'System:\s*\(([^,]+),\s*(\d+)\)'
         match = re.match(pattern, input)
@@ -67,6 +102,11 @@ class NextSectionIdValidator(Validator):
         if match:
             bool_value = match.group(1).strip().lower() == 'true'
             id_value = match.group(2).strip()
+
+            # check if id value is part of the possible next states
+            if id_value not in self.possible_next_states:
+                return (False, (None, None))
+            
             return (True, (bool_value, id_value))
         else:
             return (False, (None, None))
@@ -75,7 +115,8 @@ class NextSectionIdValidator(Validator):
         return chatbot.get_system_response(extended_context=context)
     
     def reprompt(self):
-        return """Command: Do it again, but this time respond with either "System: (True, <id>)" or "System: (False, <id>)"."""
+        id_list_string = ", ".join(self.possible_next_states)
+        return f"""Command: Do it again, but this time respond with either "System: (True, <id>)" or "System: (False, <id>)". Remember that id must be any of [{id_list_string}]."""
     
 
 # Tests
@@ -85,3 +126,8 @@ if __name__ == '__main__':
     print(boolean_validator.validate("System: True"))
     print(boolean_validator.validate("System: False"))
     print(boolean_validator.validate("System is true"))
+
+    chat_output_validator = ChatbotOutputValidator(allowed_tags=["Interviewer"])
+
+    print(chat_output_validator.validate("Interviewer: Hello"))
+    print(chat_output_validator.validate("System: Hello"))

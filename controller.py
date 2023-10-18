@@ -39,9 +39,6 @@ class Controller():
 
         logging.debug(f"Test completed successfully")
         
-
-
-    
     def _introduce_case(self):
         # a case must start with the introduction section
         current_section = self.state_machine.getCurrentState()
@@ -105,7 +102,7 @@ class Controller():
             if  not is_completed_result:
                 # The section is not completed
                 self.chatbot.add_prompt("Command: Continue the conversation. Think about how to continue in a sensible way. Then respond with Interviewer: <your response>", is_volatile=True)
-                res = self.chatbot._get_response()
+                res = self.chatbot.get_user_response()
                 self.chatbot.add_prompt(res, is_volatile=False)
             else:
                 # The section is completed
@@ -115,13 +112,13 @@ class Controller():
     def select_next_section(self, next_possible_states: list[CaseComponent]):
         # Ask the candidate what he would like to do next
         self.chatbot.add_prompt("Command: We finished the last section, successfully. Did the candidate already provide some indication where he wants to move next. If yes answer with System: True, else with System: False", is_volatile=True)
-        res = self.chatbot._get_response()
+        res = self.chatbot.get_system_response()
         (raw_result, did_provide_indication) = safety_filter(res, BooleanValidator(), self.chatbot)
         self.chatbot.add_prompt(raw_result, is_volatile=True)
 
         if not did_provide_indication:
             self.chatbot.add_prompt("Command: Ask the candidate where he would like to move next", is_volatile=True)
-            res = self.chatbot._get_response()
+            res = self.chatbot.get_user_response()
             self.chatbot.add_prompt(res, is_volatile=False)
 
             candidate_response = input("Candidate: ")
@@ -134,8 +131,8 @@ class Controller():
 {possible_options_to_continue_string}
 
 If the candidate provided a close match respond with "System: (True, <id>)". Else choose one id of where to continue and respond with "System: (False, <id>)".""", is_volatile=True)
-        res = self.chatbot._get_response()
-        (raw_result, (did_match, id_to_continue)) = safety_filter(res, NextSectionIdValidator(), self.chatbot)
+        res = self.chatbot.get_system_response()
+        (raw_result, (did_match, id_to_continue)) = safety_filter(res, NextSectionIdValidator(possible_next_states=[component.id for component in next_possible_states]), self.chatbot)
         self.chatbot.add_prompt(raw_result, is_volatile=True)
         
         logging.debug(f"did_match: {did_match}, id_to_continue: {id_to_continue}")

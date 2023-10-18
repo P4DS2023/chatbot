@@ -9,9 +9,21 @@ class ChatBotWithHistory():
         self.conversation_history: list[ConversationHistorySection] = []
     
     def add_new_section(self, section_id: str):
+        """
+        Adds a new section to the conversation history.
+
+        :param section_id: A string representing the ID of the section.
+        """
         self.conversation_history.append(ConversationHistorySection(section_id))
         
     def add_prompt(self, prompt, is_volatile=False, should_print=True):
+        """
+        Adds a new prompt to the current section of the conversation history.
+
+        :param prompt: A string representing the prompt to add.
+        :param is_volatile: A boolean indicating whether the prompt should be deleted when moving to the next section.
+        :param should_print: A boolean indicating whether the prompt should be logged to the conversation logger.
+        """
         self.conversation_history[-1].add_prompt(prompt, is_volatile=is_volatile)
 
         if should_print:
@@ -20,13 +32,19 @@ class ChatBotWithHistory():
     def get_system_response(self, extended_context = None):
         """
         Get a system response. A system response is a response typically generated after Command: . For example if we asked the chatbot to return true or false.
+        
+        :param extended_context: An optional dictionary representing the extended context.
+        :return: A string representing the system response.
         """
         tags = ["System:"]
         return self._get_response(extended_context=extended_context, override_allowed_tags=tags)
     
     def get_user_response(self, extended_context = None):
         """
-        Get a reponse of the chatbot that should be shown to the user. These are the responses that should be part of general conversation.
+        Get a response of the chatbot that should be shown to the user. These are the responses that should be part of general conversation.
+        
+        :param extended_context: An optional dictionary representing the extended context.
+        :return: A string representing the system response.
         """
         tags = ["Interviewer:"]
         return self._get_response(extended_context=extended_context, override_allowed_tags=tags)

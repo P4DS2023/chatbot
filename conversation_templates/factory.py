@@ -5,6 +5,9 @@ from conversation_templates.numeracy_template import NumeracyTemplate
 
 
 def conversationTemplateFactory(case_component):
+    """
+    Factory method to create a conversation template based on the case component type
+    """
     if case_component.type == CaseComponentType.INTRODUCTION:
         return CaseIntroductionTemplate(case_component)
     elif case_component.type == CaseComponentType.FRAMEWORK:
