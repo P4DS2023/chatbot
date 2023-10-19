@@ -1,6 +1,7 @@
 from llm.chatbot_with_history import ChatBotWithHistory
 from langchain.llms import VertexAI
 from controller import Controller
+from loggers.conversation_logger import ConversationLogger
 from statemachine.statemachine import CaseStateMachine
 from dotenv import load_dotenv
 import logging
@@ -19,6 +20,9 @@ if __name__ == '__main__':
     logging.info("Running Casey Casebot")
 
     logger = logging.getLogger('casey')
+
+    # setup Conversation logger
+    ConversationLogger.mode = "debug" # "debug" or "production"
 
     
     #llm = VertexAI(model_name="chat-bison")
