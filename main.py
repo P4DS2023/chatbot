@@ -1,5 +1,6 @@
 from llm.chatbot_with_history import ChatBotWithHistory
 from langchain.llms import VertexAI
+from langchain.llms import OpenAI
 from controller import Controller
 from loggers.conversation_logger import ConversationLogger
 from statemachine.statemachine import CaseStateMachine
@@ -28,6 +29,9 @@ if __name__ == '__main__':
     
     #llm = VertexAI(model_name="chat-bison")
     llm = VertexAI(max_output_tokens=2048)
+    # llm = OpenAI(
+    #     model_name='gpt-3.5-turbo',
+    # )
 
     case_state_machine = CaseStateMachine("cases/case.json")
     chatbot = ChatBotWithHistory(llm=llm)

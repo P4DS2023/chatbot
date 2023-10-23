@@ -1,5 +1,6 @@
 from llm.chatbot_with_history import ChatBotWithHistory
 from langchain.llms import VertexAI
+from langchain.llms import OpenAI
 from controller import Controller
 from statemachine.statemachine import CaseStateMachine
 from dotenv import load_dotenv
@@ -24,6 +25,9 @@ async def handler(websocket, path):
 
     print("New Connection established")
     llm = VertexAI(max_output_tokens=2048)
+    # llm = OpenAI(
+    #     model_name='gpt-3.5-turbo',
+    # )
 
     case_state_machine = CaseStateMachine("cases/case.json")
     chatbot = ChatBotWithHistory(llm=llm)

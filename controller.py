@@ -106,7 +106,8 @@ class Controller():
             user_input = await self.take_input()
             await self.chatbot.add_prompt(f"Candidate: {user_input}", printer=self.on_output)
 
-            (raw_result, is_completed_result) = safety_filter(user_input, BooleanValidator(), self.chatbot)
+            res = self.chatbot.get_system_response()
+            (raw_result, is_completed_result) = safety_filter(res, BooleanValidator(), self.chatbot)
             await self.chatbot.add_prompt(raw_result, is_volatile=True, printer=self.on_output)
 
             # check if we finished the section based on the response
