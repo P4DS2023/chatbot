@@ -2,6 +2,7 @@ from llm.conversation_history_section import ConversationHistorySection
 from safety_filter.safety_filter import safety_filter
 from safety_filter.validator import ChatbotOutputValidator
 from loggers.conversation_logger import ConversationLogger
+import inspect
 
 class ChatBotWithHistory():
     def __init__(self, llm):
@@ -16,7 +17,7 @@ class ChatBotWithHistory():
         """
         self.conversation_history.append(ConversationHistorySection(section_id))
         
-    def add_prompt(self, prompt, is_volatile=False, should_print=True):
+    async def add_prompt(self, prompt, is_volatile=False, printer: callable = None):
         """
         Adds a new prompt to the current section of the conversation history.
 
@@ -26,8 +27,8 @@ class ChatBotWithHistory():
         """
         self.conversation_history[-1].add_prompt(prompt, is_volatile=is_volatile)
 
-        if should_print:
-            ConversationLogger.log(prompt)
+        if printer is not None:
+            await printer(prompt) if inspect.iscoroutinefunction(printer) else printer(prompt)
     
     def get_system_response(self, extended_context = None):
         """

@@ -5,6 +5,7 @@ from loggers.conversation_logger import ConversationLogger
 from statemachine.statemachine import CaseStateMachine
 from dotenv import load_dotenv
 import logging
+import asyncio
 
 if __name__ == '__main__':
     load_dotenv()
@@ -31,5 +32,6 @@ if __name__ == '__main__':
     case_state_machine = CaseStateMachine("cases/case.json")
     chatbot = ChatBotWithHistory(llm=llm)
 
-    controller = Controller(chatbot=chatbot, state_machine=case_state_machine)
-    controller.run_complete_case()
+    controller = Controller(chatbot=chatbot, state_machine=case_state_machine, on_input= lambda: input("Candidate"), on_output=ConversationLogger.log)
+    
+    asyncio.run(controller.run_complete_case())

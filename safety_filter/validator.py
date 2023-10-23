@@ -69,9 +69,9 @@ class BooleanValidator(Validator):
     def __init__(self):
         super().__init__()
     
-    def validate(self, input: str)->(bool, bool):
+    def validate(self, input_str: str)->(bool, bool):
         # Remove whitespace and "System:" prefix
-        cleaned_string = input.replace('System:', '').strip().lower()
+        cleaned_string = input_str.replace('System:', '').strip().lower()
 
         if cleaned_string == 'true':
             return (True, True)
