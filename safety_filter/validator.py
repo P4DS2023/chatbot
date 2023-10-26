@@ -39,10 +39,12 @@ class ChatbotOutputValidator(Validator):
 
         return cleaned_matches
 
-    def validate(self, input:str) -> (bool, str):
+    def validate(self, input: str) -> (bool, str):
+        return self._validate_loose(input)
+    
+    def _validate_strict(self, input:str) -> (bool, str):
         # find all tags in the input
         all_tags = ChatbotOutputValidator._find_tags(input)
-
         # check that exactly one tag was found
         if len(all_tags) != 1:
             return (False, None)
@@ -53,12 +55,39 @@ class ChatbotOutputValidator(Validator):
 
         return (True, input.strip())
 
+    def _validate_loose(self, input:str) -> (bool, str):
+        # find all tags in the input
+        all_tags = ChatbotOutputValidator._find_tags(input)
+        if len(all_tags) == 0:
+            return (False, None)
+
+        # Step 1: Find index where all matches start
+        tag_indices = {}
+        for tag in all_tags:
+            tag_indices[tag] = input.find(tag)
+        
+        # Step 2: Find the first tag
+        first_tag = min(tag_indices, key=tag_indices.get)
+
+        # check that this tag is allowed
+        if first_tag not in self.allowed_tags:
+            return (False, None)
+        
+        # Step 3: Strip all other tags
+        tag_indices.pop(first_tag)
+        if len(tag_indices) == 0:
+            return (True, input.strip())
+        
+        second_earliest_tag = min(tag_indices, key=tag_indices.get)
+        input = input[:input.find(second_earliest_tag)]
+        return (True, input.strip())
+
     
     def call(self, context, chatbot):
         return chatbot._get_response(extended_context=context)
 
     def reprompt(self):
-        return f"""Command: Do it again, but this time your response should be started with only of of the tags {self.allowed_tags}. It must also not continue after this tag."""
+        return f"""Command: Do it again, but this time your response should be started with only of of the tags from the list [{self.allowed_tags}]. It must also not continue after this tag."""
         
 
 
@@ -68,10 +97,11 @@ class BooleanValidator(Validator):
     """
     def __init__(self):
         super().__init__()
+        
     
-    def validate(self, input: str)->(bool, bool):
+    def validate(self, input_str: str)->(bool, bool):
         # Remove whitespace and "System:" prefix
-        cleaned_string = input.replace('System:', '').strip().lower()
+        cleaned_string = input_str.replace('System:', '').replace('.', '').strip().lower()
 
         if cleaned_string == 'true':
             return (True, True)
@@ -129,5 +159,5 @@ if __name__ == '__main__':
 
     chat_output_validator = ChatbotOutputValidator(allowed_tags=["Interviewer"])
 
-    print(chat_output_validator.validate("Interviewer: Hello"))
+    print(chat_output_validator.validate("Interviewer: Hello   \n Candidate: Yessir"))
     print(chat_output_validator.validate("System: Hello"))
